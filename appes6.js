@@ -54,6 +54,57 @@ class UI{
     }
   }
 }
+
+
+class Store {
+  // get data from lS
+  static getBooks() {
+    console.log('book got from LS');
+    let books;
+    if (localStorage.getItem('books') === null) {
+      books = [];
+    }
+    else {
+      books = JSON.parse(localStorage.getItem('books'));
+    }
+    return books;
+  }
+
+  static displayBooks() {
+    console.log('book displayed in UI');
+    // get books from LS;
+    const books = Store.getBooks();
+    books.forEach( book =>{
+      const ui = new UI();
+      ui.addBookToList(book);
+    })
+  }
+
+  // add data to LS
+  static addBook(book) {
+    const books = Store.getBooks();
+
+    books.push(book);
+
+    localStorage.setItem('books', JSON.stringify(books));
+  }
+  // Remove from LS
+  static removeBook(isbn) {
+    // console.log(isbn);
+    const books = Store.getBooks();
+    books.forEach( (book, index) => {
+      if(book.isbn === isbn) {
+        books.splice(index, 1);
+      }// if the isbn from UI and LS matched
+    })
+    // SEt the LS again after we remove the book
+    localStorage.setItem('books', JSON.stringify(books));
+  }
+}
+
+// display book in UI from LS
+document.addEventListener('DOMContentLoaded', Store.displayBooks);
+
 // Event Listeneres for add
 document.getElementById('book-form').addEventListener('submit', (e) => {
   // Get form values
@@ -76,6 +127,9 @@ document.getElementById('book-form').addEventListener('submit', (e) => {
   } else {
     // Add book into UI
     ui.addBookToList(book);
+
+    // Add book to LS
+    Store.addBook(book);
     // Clear input fields
     ui.clearFields();
     // show the success message
@@ -86,15 +140,18 @@ document.getElementById('book-form').addEventListener('submit', (e) => {
 });
 
 // Event Listener for Delete
-document.getElementById('book-list').addEventListener('click', function (e) {
+document.getElementById('book-list').addEventListener('click', e => {
   // Instantiate UI
   const ui = new UI();
   // set the filter here
   if (e.target.className === 'delete') {
     ui.removeBook(e.target);
+    // Remove from LS
+    // we need to get sth unique to remove from both UI and LS, which is isbn number
+    Store.removeBook(e.target.parentElement.previousElementSibling.textContent);
   }
+  e.preventDefault();
 })
-
 
 
 
